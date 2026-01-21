@@ -3,6 +3,8 @@ package com.br.service;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import com.br.domain.Product;
+import com.br.exception.BusinessException;
+import com.br.exception.ResourceNotFoundException;
 import com.br.repository.ProductRepository;
 
 @Service
@@ -18,7 +20,7 @@ public class ProductService {
 
         if (repository.existsByName(product.getName())) {
 
-            throw new IllegalArgumentException("Produto já existe");
+            throw new BusinessException("Produto já existe");
         }
 
         return repository.save(product);
@@ -32,7 +34,7 @@ public class ProductService {
     public Product findById(Long id) {
 
         return repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
 
     }
 
