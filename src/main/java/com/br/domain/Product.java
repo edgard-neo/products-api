@@ -41,6 +41,8 @@ public class Product {
 
     }
 
+    public Product() {}
+
     @PrePersist
     public void prePersist() {
         this.active = true;
