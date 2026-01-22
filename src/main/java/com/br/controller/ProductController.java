@@ -16,6 +16,7 @@ import com.br.dto.ProductRequestDTO;
 import com.br.dto.ProductResponseDTO;
 import com.br.mapper.ProductMapper;
 import com.br.service.ProductService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/products")
@@ -28,7 +29,8 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductResponseDTO> create(@RequestBody ProductRequestDTO request) {
+    public ResponseEntity<ProductResponseDTO> create(
+            @Valid @RequestBody ProductRequestDTO request) {
 
         Product product = service.create(ProductMapper.toEntity(request));
 
@@ -58,7 +60,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> update(@PathVariable Long id,
-            @RequestBody ProductRequestDTO request) {
+            @Valid @RequestBody ProductRequestDTO request) {
 
         Product req = ProductMapper.toEntity(request);
         Product product = service.update(id, req);
