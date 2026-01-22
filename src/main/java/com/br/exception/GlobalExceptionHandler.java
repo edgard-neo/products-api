@@ -38,6 +38,7 @@ public class GlobalExceptionHandler {
     }
 
     // handler para erros de validação
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDTO> handleValidation(MethodArgumentNotValidException ex) {
 
         String message = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
