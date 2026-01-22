@@ -2,6 +2,7 @@ package com.br.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.br.dto.ErrorResponseDTO;
@@ -34,5 +35,16 @@ public class GlobalExceptionHandler {
                 "Erro interno do Servidor", ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    // handler para erros de validação
+    public ResponseEntity<ErrorResponseDTO> handleValidation(MethodArgumentNotValidException ex) {
+
+        String message = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+
+        ErrorResponseDTO error =
+                new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), "Erro de Validação", message);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 }
