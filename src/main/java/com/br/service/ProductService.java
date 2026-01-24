@@ -1,62 +1,60 @@
 package com.br.service;
 
-import java.util.List;
-import org.springframework.stereotype.Service;
 import com.br.domain.Product;
 import com.br.exception.BusinessException;
 import com.br.exception.ResourceNotFoundException;
 import com.br.repository.ProductRepository;
+import java.util.List;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ProductService {
 
-    private final ProductRepository repository;
+  private final ProductRepository repository;
 
-    public ProductService(ProductRepository repository) {
-        this.repository = repository;
+  public ProductService(ProductRepository repository) {
+    this.repository = repository;
+  }
+
+  public Product create(Product product) {
+
+    if (repository.existsByName(product.getName())) {
+
+      throw new BusinessException("Produto já existe");
     }
 
-    public Product create(Product product) {
+    return repository.save(product);
+  }
 
-        if (repository.existsByName(product.getName())) {
+  public List<Product> listActive() {
 
-            throw new BusinessException("Produto já existe");
-        }
+    return repository.findByActiveTrue();
+  }
 
-        return repository.save(product);
-    }
+  public Product findById(Long id) {
 
-    public List<Product> listActive() {
+    return repository
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
+  }
 
-        return repository.findByActiveTrue();
-    }
+  public Product update(Long id, Product update) {
 
-    public Product findById(Long id) {
+    Product product = this.findById(id);
 
-        return repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado"));
+    product.setName(update.getName());
+    product.setDescription(update.getDescription());
+    product.setPrice(update.getPrice());
 
-    }
+    return repository.save(product);
+  }
 
-    public Product update(Long id, Product update) {
+  public void delete(Long id) {
 
-        Product product = this.findById(id);
+    Product product = this.findById(id);
 
-        product.setName(update.getName());
-        product.setDescription(update.getDescription());
-        product.setPrice(update.getPrice());
+    product.setActive(false);
 
-        return repository.save(product);
-
-    }
-
-    public void delete(Long id) {
-
-        Product product = this.findById(id);
-
-        product.setActive(false);
-
-        repository.save(product);
-
-    }
+    repository.save(product);
+  }
 }
