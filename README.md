@@ -1,5 +1,9 @@
 # API de Produtos com Spring Boot
 
+![CI Status](https://github.com/edgard-neo/products-api/actions/workflows/ci.yml/badge.svg)
+![Deploy Status](https://github.com/edgard-neo/products-api/actions/workflows/deploy-render.yml/badge.svg)
+[![codecov](https://codecov.io/gh/edgard-neo/products-api/branch/main/graph/badge.svg)](https://codecov.io/gh/edgard-neo/products-api)
+
 ## O que é isso?
 
 Uma API REST pra gerenciar produtos. Basicamente um CRUD completo, mas feito do jeito certo - com camadas separadas, DTOs, Docker e PostgreSQL.
