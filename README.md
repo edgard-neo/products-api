@@ -1,138 +1,214 @@
-# API de Produtos com Spring Boot
+# 🛍️ Products API
 
 ![CI Status](https://github.com/edgard-neo/products-api/actions/workflows/ci.yml/badge.svg)
-![Deploy Status](https://github.com/edgard-neo/products-api/actions/workflows/deploy-render.yml/badge.svg)
-[![codecov](https://codecov.io/gh/edgard-neo/products-api/branch/main/graph/badge.svg)](https://codecov.io/gh/edgard-neo/products-api)
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
 
-## O que é isso?
+API RESTful para gerenciamento de produtos com Spring Boot 3, Docker e CI/CD.
 
-Uma API REST pra gerenciar produtos. Basicamente um CRUD completo, mas feito do jeito certo - com camadas separadas, DTOs, Docker e PostgreSQL.
+---
 
-A ideia era sair do "Java puro" e aprender Spring Boot de verdade, entendendo como as coisas se conectam: controller recebe requisição, service processa lógica, repository acessa banco. Tudo organizado e testado.
+## 🚀 Tecnologias
 
-## O que dá pra fazer
+- **Backend:** Java 17, Spring Boot 3.2.1, Spring Data JPA
+- **Database:** PostgreSQL 16
+- **Docs:** Swagger/OpenAPI
+- **Tests:** JUnit 5, Mockito, JaCoCo
+- **DevOps:** Docker, Docker Compose, GitHub Actions
 
-- Criar produtos
-- Buscar produto específico
-- Listar todos os produtos
-- Atualizar informações
-- Deletar produtos
+---
 
-Nada revolucionário, mas é a base que você precisa saber bem antes de fazer coisas mais complexas.
+## ✨ Funcionalidades
 
-## Como tá organizado
+- ✅ CRUD completo de produtos
+- ✅ Validação automática de dados
+- ✅ Tratamento global de exceções
+- ✅ Documentação interativa (Swagger)
+- ✅ Testes unitários (100% service layer)
+- ✅ Hot reload em desenvolvimento
+- ✅ CI/CD pipeline
 
-```
-.
-├── docker-compose.yml    # Configuração dos containers
-├── Dockerfile           # Build da aplicação
-├── pom.xml             # Dependências Maven
-├── README.md
-└── src
-    ├── main
-    │   └── java
-    │       └── com
-    │           └── br
-    │               └── Application.java
-    └── test
-        └── java
-            └── com
-                └── br
-                    └── ApplicationTest.java
-```
+---
 
-Por enquanto tá bem enxuto. A estrutura vai crescendo conforme vou adicionando features (controller, service, repository, etc).
+## 📦 Pré-requisitos
 
-O fluxo que vou seguir é: **Controller → Service → Repository**
+- [Docker](https://www.docker.com/) 20.10+
+- [Docker Compose](https://docs.docker.com/compose/) 2.22+
 
-E os dados vão passar por **Mapper** pra converter entre DTO e Entity.
+---
 
-## Por que fiz assim
+## 🏃 Quick Start
 
-**DTOs separados:** A entidade do banco não é a mesma coisa que vai e volta na API. Isso dá mais controle e segurança.
-
-**Mapper manual:** Por enquanto fiz na mão mesmo. Mais pra frente posso usar MapStruct, mas quis entender o processo primeiro.
-
-**Docker pra tudo:** Rodando tudo em container. Facilita demais - não precisa instalar PostgreSQL na máquina, só dar `docker compose up` e pronto.
-
-**Camadas bem definidas:** Cada classe tem uma responsabilidade. Controller não acessa Repository direto, Service não retorna Entity, etc.
-
-## Tecnologias
-
-- **Java 17** - a versão LTS atual
-- **Spring Boot** - framework que facilita muito a vida
-- **Spring Data JPA** - pra não escrever SQL na mão
-- **PostgreSQL** - banco relacional de verdade
-- **Docker** - pra subir tudo fácil
-- **JUnit 5** - testes automatizados
-
-## Como rodar
-
-Precisa só do Docker instalado.
+### 1. Clone o repositório
 
 ```bash
-# Sobe tudo (aplicação + banco)
-docker compose up --build
-
-# A API fica em:
-# http://localhost:8080
+git clone https://github.com/edgard-neo/products-api.git
+cd products-api
 ```
 
-Pronto. O Docker Compose cria o banco PostgreSQL e já conecta com a aplicação automaticamente.
-
-## Variáveis de ambiente
-
-O Docker já configura tudo, mas pra referência:
-
-```
-SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/products
-SPRING_DATASOURCE_USERNAME=products
-SPRING_DATASOURCE_PASSWORD=products
-SPRING_JPA_HIBERNATE_DDL_AUTO=update
-```
-
-## Testes
-
-Fiz testes na camada de service pra validar a lógica de negócio.
+### 2. Suba a aplicação
 
 ```bash
-mvn test
+# Desenvolvimento (com hot reload)
+docker compose watch
+
+# Ou sem hot reload
+docker compose up
 ```
 
-## O que aprendi fazendo isso
+### 3. Acesse
 
-- Como estruturar uma aplicação Spring Boot direito
-- A importância de separar DTOs de Entidades
-- Como funciona o Spring Data JPA (é mágico, mas entendi a mágica)
-- Docker Compose pra subir aplicação + banco junto
-- Injeção de dependência na prática
-- Como testar serviços com JUnit
+- **API:** http://localhost:8080
+- **Swagger:** http://localhost:8080/swagger-ui/index.html
+- **Docs JSON:** http://localhost:8080/v3/api-docs
 
-## Próximos passos
+---
 
-- Adicionar paginação e ordenação (página com 1000 produtos não faz sentido)
-- Implementar autenticação com Spring Security
-- Fazer testes de integração (não só unitários)
-- Adicionar validações com Bean Validation
-- Documentar com Swagger/OpenAPI
-- Fazer deploy em alguma cloud (Render, Railway, etc)
+## 📚 Endpoints
 
-## Observações
+| Método   | Endpoint         | Descrição      |
+| -------- | ---------------- | -------------- |
+| `POST`   | `/products`      | Criar produto  |
+| `GET`    | `/products`      | Listar ativos  |
+| `GET`    | `/products/{id}` | Buscar por ID  |
+| `PUT`    | `/products/{id}` | Atualizar      |
+| `DELETE` | `/products/{id}` | Deletar (soft) |
 
-Esse é meu projeto base pra aprender Spring Boot do jeito certo. Comecei com a estrutura mínima (só o Application.java) e vou adicionando as camadas conforme vou estudando cada parte.
+### Exemplo de Request
 
-A ideia é não sair copiando código de tutorial, mas entender cada pedaço antes de adicionar. Por isso tá começando pequeno - controller, service, repository, DTOs, tudo vem aos poucos.
-
-A curva de aprendizado do Spring é meio íngreme no começo (muita "mágica" acontecendo), mas quando você entende o fluxo fica bem mais tranquilo.
-
-## Endpoints (quando implementar)
-
-```
-POST   /api/products          # Criar produto
-GET    /api/products/{id}     # Buscar por ID
-GET    /api/products          # Listar todos
-PUT    /api/products/{id}     # Atualizar
-DELETE /api/products/{id}     # Deletar
+```bash
+curl -X POST http://localhost:8080/products \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Mouse Gamer",
+    "description": "RGB 7 botões",
+    "price": 149.90
+  }'
 ```
 
-Por enquanto ainda tô montando a estrutura base.
+### Exemplo de Response
+
+```json
+{
+  "id": 1,
+  "name": "Mouse Gamer",
+  "description": "RGB 7 botões",
+  "price": 149.9,
+  "active": true,
+  "createdAt": "2026-01-23T10:30:00"
+}
+```
+
+---
+
+## 🧪 Testes
+
+```bash
+# Rodar testes
+docker exec -it products-app mvn test
+
+# Gerar relatório de cobertura
+docker exec -it products-app mvn jacoco:report
+```
+
+Relatório: `target/site/jacoco/index.html`
+
+---
+
+## 📁 Estrutura
+
+```
+src/main/java/com/br/
+├── controller/          # Endpoints REST
+├── service/             # Regras de negócio
+├── repository/          # Acesso ao banco
+├── domain/              # Entidades JPA
+├── dto/                 # Request/Response
+├── mapper/              # Conversões DTO ↔ Entity
+└── exception/           # Tratamento de erros
+```
+
+---
+
+## 🐳 Comandos Docker
+
+```bash
+# Desenvolvimento
+docker compose watch              # Com hot reload
+docker compose up                 # Sem hot reload
+docker compose down               # Parar
+
+# Produção
+docker compose -f docker-compose.prod.yml up --build -d
+
+# Logs
+docker compose logs -f app
+
+# Acessar container
+docker exec -it products-app sh
+
+# Acessar PostgreSQL
+docker exec -it products-db psql -U products -d products
+```
+
+---
+
+## 🛠️ Desenvolvimento Local (Sem Docker)
+
+### Requisitos
+
+- Java 17+
+- Maven 3.9+
+- PostgreSQL 16+
+
+### Setup
+
+1. **Configure o banco:**
+
+```sql
+CREATE DATABASE products;
+CREATE USER products WITH PASSWORD 'products';
+GRANT ALL PRIVILEGES ON DATABASE products TO products;
+```
+
+2. **Configure `application.properties`:**
+
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/products
+spring.datasource.username=products
+spring.datasource.password=products
+```
+
+3. **Execute:**
+
+```bash
+mvn spring-boot:run
+```
+
+---
+
+## 🔄 CI/CD
+
+Pipeline automático via GitHub Actions:
+
+- ✅ Build e compile
+- ✅ Testes unitários
+- ✅ Análise de segurança (OWASP)
+- ✅ Build Docker image
+- ✅ Cobertura de código
+
+Configurado em `.github/workflows/ci.yml`
+
+---
+
+## 📋 Padrão de Commits
+
+```
+feat: nova funcionalidade
+fix: correção de bug
+docs: documentação
+test: testes
+refactor: refatoração
+style: formatação
+chore: manutenção
+```
