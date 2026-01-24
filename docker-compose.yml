@@ -1,6 +1,9 @@
 services:
+  # ========================================
+  # POSTGRESQL DATABASE
+  # ========================================
   db:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: products-db
     environment:
       POSTGRES_DB: products
@@ -10,34 +13,67 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - products-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U products"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
+  # ========================================
+  # SPRING BOOT API (Development Mode)
+  # ========================================
   app:
     build:
       context: .
-      target: development
+      target: development  # Usa stage development do Dockerfile
     container_name: products-app
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
+      # Database
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/products
       SPRING_DATASOURCE_USERNAME: products
       SPRING_DATASOURCE_PASSWORD: products
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_DOCKER_COMPOSE_ENABLED: false
+      SPRING_JPA_SHOW_SQL: "true"
+      # Docker Compose
+      SPRING_DOCKER_COMPOSE_ENABLED: "false"
     volumes:
+      # Cache do Maven (não baixa deps toda hora)
       - ~/.m2:/root/.m2
+    networks:
+      - products-network
+    restart: unless-stopped
+    # ========================================
+    # HOT RELOAD (Docker Compose Watch)
+    # ========================================
     develop:
       watch:
+        # Sincroniza código fonte
         - action: sync
           path: ./src
           target: /app/src
           ignore:
             - "**/*.class"
+        # Rebuilda se mudar pom.xml
         - action: rebuild
           path: ./pom.xml
-    restart: always
 
+# ========================================
+# VOLUMES (Persistência de dados)
+# ========================================
 volumes:
   postgres_data:
+    driver: local
+
+# ========================================
+# NETWORKS (Comunicação entre containers)
+# ========================================
+networks:
+  products-network:
+    driver: bridge

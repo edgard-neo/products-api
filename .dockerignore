@@ -1,4 +1,14 @@
-target
-.git
-.gitignore
-node_modules
+# Build artifacts
+
+target/
+_.jar
+_.war
+\*.class
+
+# IDE
+
+.idea/
+.vscode/
+_.iml
+_.ipr
+\*.iws
