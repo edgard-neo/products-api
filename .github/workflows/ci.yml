@@ -1,24 +1,164 @@
-name: CI / Api-Products
+name: CI - Build and Test
 
+# ========================================
+# QUANDO EXECUTAR
+# ========================================
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - develop
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - develop
 
+# ========================================
+# JOBS
+# ========================================
 jobs:
-  build:
+  # ==========================================
+  # JOB 1: BUILD E TESTE
+  # ==========================================
+  build-and-test:
+    name: Build and Test
     runs-on: ubuntu-latest
 
+    # Serviços necessários (PostgreSQL para testes)
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: products_test
+          POSTGRES_USER: products
+          POSTGRES_PASSWORD: products
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - name: Checkout do código
+      # ========================================
+      # PASSO 1: Checkout do código
+      # ========================================
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configurar Java 17
+      # ========================================
+      # PASSO 2: Setup Java
+      # ========================================
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 17
+          java-version: "17"
+          distribution: "temurin"
+          cache: "maven"
 
-      - name: Build, testes e JaCoCo
-        run: mvn clean test
+      # ========================================
+      # PASSO 3: Build com Maven
+      # ========================================
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
+
+      # ========================================
+      # PASSO 4: Rodar testes
+      # ========================================
+      - name: Run tests
+        run: mvn test
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/products_test
+          SPRING_DATASOURCE_USERNAME: products
+          SPRING_DATASOURCE_PASSWORD: products
+
+      # ========================================
+      # PASSO 5: Gerar relatório de cobertura
+      # ========================================
+      - name: Generate coverage report
+        run: mvn jacoco:report
+
+      # ========================================
+      # PASSO 6: Upload do relatório
+      # ========================================
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./target/site/jacoco/jacoco.xml
+          fail_ci_if_error: false
+
+      # ========================================
+      # PASSO 7: Upload de artefatos
+      # ========================================
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar
+          retention-days: 7
+
+  # ==========================================
+  # JOB 2: BUILD DOCKER IMAGE
+  # ==========================================
+  build-docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: build-and-test # Só roda se testes passarem
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ========================================
+      # Setup Docker Buildx (build multi-platform)
+      # ========================================
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ========================================
+      # Build da imagem Docker
+      # ========================================
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: production
+          push: false
+          tags: products-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ==========================================
+  # JOB 3: VERIFICAÇÃO DE SEGURANÇA
+  # ==========================================
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "maven"
+
+      # ========================================
+      # Verificar vulnerabilidades nas dependências
+      # ========================================
+      - name: OWASP Dependency Check
+        run: mvn org.owasp:dependency-check-maven:check
+        continue-on-error: true
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-report
+          path: target/dependency-check-report.html
+          retention-days: 7
